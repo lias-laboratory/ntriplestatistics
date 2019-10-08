@@ -15,7 +15,7 @@ public class GlobalCardinalityAlgorithmTest {
 	@Test
 	public void buildAsMapTest() {
 		// Given
-		String inputFiles = "src/test/resources/sample.nt";
+		String inputFiles = "src/test/resources/globalcardinalitiessample.nt";
 		
 		
 		// When

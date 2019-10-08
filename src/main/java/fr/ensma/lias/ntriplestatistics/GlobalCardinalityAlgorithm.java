@@ -29,12 +29,13 @@ public class GlobalCardinalityAlgorithm {
 		this.outputDirectory = outputDirectory;
 		this.inputFiles = inputFiles;
 
-		SparkConf conf = new SparkConf().setAppName("global_cardinality").setMaster("local[16]");
+		SparkConf conf = new SparkConf().setAppName("global_cardinality").setMaster("local[*]");
 		sc = new JavaSparkContext(conf);
 	}
 
 	private void build() {
 		JavaRDD<String> textFile = sc.textFile(inputFiles);
+		// JavaRDD<String> textFile = sc.textFile("hdfs://s-virtualmachine1-lias:9000/user/adminlias/2015-11-02-RouteThing.node.sorted.nt");
 
 		Long subjectNumber = textFile.filter(t -> GlobalCardinalityAlgorithm.getLineFilter(t))
 				.map(line -> line.split(" ")[0]).distinct().count();

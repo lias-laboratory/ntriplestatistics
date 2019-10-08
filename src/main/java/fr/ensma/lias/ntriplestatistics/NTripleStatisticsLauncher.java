@@ -8,7 +8,7 @@ import picocli.CommandLine.Option;
 /**
  * @author Mickael BARON
  */
-@Command(version = "NTripleStatistics 1.0", header = "%nNTripleStatistics: basic statistic tools in NTriple files.%n", footer = "Implemented by Mickel BARON (Follow me on Twitter @mickaelbaron).")
+@Command(version = "NTripleStatistics 1.0", header = "%nNTripleStatistics: statistic tools for NTriple files.%n", description = "TBA", footer = "Implemented by Mickel BARON (Follow me on Twitter @mickaelbaron).")
 public class NTripleStatisticsLauncher implements Runnable {
 
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Print usage help and exit.")
@@ -19,7 +19,15 @@ public class NTripleStatisticsLauncher implements Runnable {
 
 	@Option(names = { "-o", "--output" }, required = true, description = "The output directory to save the results.")
 	String output;
+	
+	@Option(names = { "-t", "--type" }, required = true, description = "The type of algorithm to use: ${COMPLETION-CANDIDATES}")
+	NTRIPLEStatisticsTypes type;
 
+	enum NTRIPLEStatisticsTypes {
+		GLOBAL_CARDINALITIES,
+		LOCAL_CARDINALITIES
+	}
+	
 	public static void main(String[] args) {
 		new CommandLine(new NTripleStatisticsLauncher()).execute(args);
 	}
