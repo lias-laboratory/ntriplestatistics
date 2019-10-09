@@ -57,7 +57,7 @@ public class GlobalCardinalityAlgorithm {
 	}
 
 	private void saveAsTextFile() {
-		finalResult.coalesce(1).saveAsTextFile(outputDirectory + "/cardinalities.nt");
+		finalResult.coalesce(1).saveAsTextFile(outputDirectory + "/globalcardinalities");
 
 		sc.close();
 	}
@@ -122,7 +122,7 @@ public class GlobalCardinalityAlgorithm {
 		}
 	}
 
-	public static class GlobalCardinalityAlgorithmBuilder {
+	public static class GlobalCardinalityAlgorithmBuilder implements ICardinalityAlgorithmBuilder {
 		private String outputDirectory;
 
 		private String inputFiles;
@@ -144,11 +144,13 @@ public class GlobalCardinalityAlgorithm {
 			return currentInstance;
 		}
 
+		@Override
 		public String buildAsText() {
 			GlobalCardinalityAlgorithm build = this.build();
 			return build.saveAsText();
 		}
 
+		@Override
 		public void buildAsTextFile() {
 			if (this.outputDirectory == null) {
 				throw new RuntimeException("OutputDirectory value is missing.");
@@ -158,9 +160,15 @@ public class GlobalCardinalityAlgorithm {
 			build.saveAsTextFile();
 		}
 
+		@Override
 		public Map<String, Cardinality> buildAsMap() {
 			GlobalCardinalityAlgorithm build = this.build();
 			return build.saveAsMap();
+		}
+
+		@Override
+		public ICardinalityAlgorithmBuilder withTypePredicateIdentifier(String typePredicateIdentifier) {
+			return null;
 		}
 	}
 }
