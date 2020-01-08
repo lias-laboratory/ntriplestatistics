@@ -89,7 +89,7 @@ public class GlobalCardinalityAlgorithm {
 	}
 
 	protected static boolean getLineFilter(String line) {
-		return !line.startsWith("_");
+		return true;//!line.startsWith("_");
 	}
 
 	private static String sort(Iterable<Long> values) {

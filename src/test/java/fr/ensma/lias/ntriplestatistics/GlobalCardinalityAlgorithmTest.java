@@ -33,7 +33,7 @@ public class GlobalCardinalityAlgorithmTest {
 		Assert.assertEquals(new Long(0), buildAsMap.get("is").getMin());
 		Assert.assertEquals(new Long(1), buildAsMap.get("is_eating").getMax());
 		Assert.assertEquals(new Long(0), buildAsMap.get("is_eating").getMin());
-		Assert.assertEquals(new Long(1), buildAsMap.get("is_sleeping").getMax());
+		Assert.assertEquals(new Long(2), buildAsMap.get("is_sleeping").getMax());
 		Assert.assertEquals(new Long(0), buildAsMap.get("is_sleeping").getMin());
 	}
 
@@ -48,7 +48,7 @@ public class GlobalCardinalityAlgorithmTest {
 		String buildAsText = builder.buildAsText();
 
 		// Then
-		Assert.assertTrue(buildAsText.contains("is_sleeping,0,1"));
+		Assert.assertTrue(buildAsText.contains("is_sleeping,0,2"));
 		Assert.assertTrue(buildAsText.contains("is,0,1"));
 		Assert.assertTrue(buildAsText.contains("is_attending,1,2"));
 		Assert.assertTrue(buildAsText.contains("is_eating,0,1"));
@@ -85,7 +85,7 @@ public class GlobalCardinalityAlgorithmTest {
 
 		String fullContent = sb.toString();
 		
-		Assert.assertTrue(fullContent.contains("is_sleeping,0,1"));
+		Assert.assertTrue(fullContent.contains("is_sleeping,0,2"));
 		Assert.assertTrue(fullContent.contains("is,0,1"));
 		Assert.assertTrue(fullContent.contains("is_attending,1,2"));
 		Assert.assertTrue(fullContent.contains("is_eating,0,1"));

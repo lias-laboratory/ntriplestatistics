@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -35,7 +34,7 @@ public class LocalCardinalityAlgorithm {
 
 	private static String typePredicateIdentifier = TYPE_PREDICATE_IDENTIFIER_DEFAULT;
 	
-	private static final String NO_CLASS_DEFINITION = "VOID";
+	private static final String NO_CLASS_DEFINITION = "Thing";
 
 	private static final String CLASS_DEFINITION_IDENTIFIER = "@";
 
@@ -60,11 +59,15 @@ public class LocalCardinalityAlgorithm {
 
 		// Change main key by @class (subjects are no longer useful). Count the
 		// predicates.
-		JavaPairRDD<String, Iterable<String>> mapToPairPredicats = groupBySubject.mapToPair(t -> extractKeys(t._2));
+		//JavaPairRDD<String, Iterable<String>> mapToPairPredicats = groupBySubject.mapToPair(t -> extractKeys(t._2));
+		
+		//Louise
+		JavaPairRDD<Iterable<String>, Iterable<String>> mapToPairClasses = groupBySubject.mapToPair(t -> extractKeys(t._2));
+		JavaPairRDD<String, Iterable<String>> mapToPairPredicats = mapToPairClasses.flatMapToPair(t -> seperateClass(t));
 
-		// Reduce by @class and remove predicates without defined class.
+		// Reduce by @class and // do not // remove predicates without defined class.
 		JavaPairRDD<String, Iterable<String>> reduceByKey = mapToPairPredicats
-				.filter(t -> !NO_CLASS_DEFINITION.equals(t._1))
+				//.filter(t -> !NO_CLASS_DEFINITION.equals(t._1)) //Louise
 				.reduceByKey((x, y) -> mergePredicateCardinalities(x, y));
 
 		// Create a couple key from @class and predicate.
@@ -74,6 +77,16 @@ public class LocalCardinalityAlgorithm {
 		// Group by key and reduce the values to keep only min and max. In the case of
 		// the values has only one item, it's the case of max = min.
 		finalResult = flatMapToPair.groupByKey().mapToPair(t -> new Tuple2<String, String>(t._1, reduceAndSort(t._2)));
+	}
+	
+	//Louise
+	private static Iterator<Tuple2<String, Iterable<String>>> seperateClass(Tuple2<Iterable<String>, Iterable<String>> f) {
+		List<Tuple2<String, Iterable<String>>> mapResults = new ArrayList<>();
+		Iterator<String> firstPart = f._1.iterator();
+		while (firstPart.hasNext()) {
+			mapResults.add(new Tuple2<String, Iterable<String>>(firstPart.next(),f._2));
+		}
+		return mapResults.iterator();
 	}
 
 	private static Iterator<Tuple2<String, Long>> createClassPredicateKey(Tuple2<String, Iterable<String>> f) {
@@ -161,7 +174,7 @@ public class LocalCardinalityAlgorithm {
 		return min + "," + max;
 	}
 
-	private static Tuple2<String, Iterable<String>> extractKeys(Iterable<String> t) {
+	/*private static Tuple2<String, Iterable<String>> extractKeys(Iterable<String> t) {
 		Optional<String> findFirst = StreamSupport.stream(t.spliterator(), false)
 				.filter(ts -> ts.startsWith(CLASS_DEFINITION_IDENTIFIER)).findFirst();
 
@@ -184,6 +197,36 @@ public class LocalCardinalityAlgorithm {
 			}
 		} else {
 			return new Tuple2<String, Iterable<String>>(NO_CLASS_DEFINITION, contents);
+		}
+	}*/
+	
+	//Louise
+	private static Tuple2<Iterable<String>, Iterable<String>> extractKeys(Iterable<String> t) {
+		List<String> findClass = StreamSupport.stream(t.spliterator(), false)
+				.filter(ts -> ts.startsWith(CLASS_DEFINITION_IDENTIFIER)).collect(Collectors.toList());
+
+		Map<String, Long> collect = StreamSupport.stream(t.spliterator(), false)
+				.filter(line -> !line.startsWith(CLASS_DEFINITION_IDENTIFIER))
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+		List<String> contents = new ArrayList<>();
+		for (Map.Entry<String, Long> entry : collect.entrySet()) {
+			contents.add(entry.getKey() + " " + entry.getValue());
+		}
+		
+		List<String> classes = new ArrayList<>();
+		if (!findClass.isEmpty()) {
+			for(String s:findClass) {
+				if(s.length()>1) {
+					classes.add(s.substring(1));
+				}else {
+					throw new DatasetRuntimeException("Key must be not empty");
+				}			
+			}
+			return new Tuple2<Iterable<String>, Iterable<String>>(classes, contents);
+		} else {
+			classes.add(NO_CLASS_DEFINITION);
+			return new Tuple2<Iterable<String>, Iterable<String>>(classes, contents);
 		}
 	}
 
@@ -225,10 +268,6 @@ public class LocalCardinalityAlgorithm {
 
 		sc.close();
 		return result;
-	}
-
-	protected static boolean getLineFilter(String line) {
-		return !line.startsWith("_");
 	}
 
 	public static class LocalCardinalityAlgorithmBuilder implements ICardinalityAlgorithmBuilder {
