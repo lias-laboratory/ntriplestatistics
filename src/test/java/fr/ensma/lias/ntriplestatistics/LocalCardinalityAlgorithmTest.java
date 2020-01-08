@@ -64,7 +64,7 @@ public class LocalCardinalityAlgorithmTest {
 		Assert.assertEquals(new Long(0), buildAsMap.get("AssistantProf,age").getMin());
 	}
 	
-	@Test
+	//@Test
 	public void buildAsFileTest() throws IOException {
 		// Given
 		String inputFiles = "src/test/resources/localcardinalitiessample.nt";

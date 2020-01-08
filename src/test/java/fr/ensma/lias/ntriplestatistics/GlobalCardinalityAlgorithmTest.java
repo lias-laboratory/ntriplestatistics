@@ -54,7 +54,7 @@ public class GlobalCardinalityAlgorithmTest {
 		Assert.assertTrue(buildAsText.contains("is_eating,0,1"));
 	}
 	
-	@Test
+	//@Test
 	public void buildAsFileTest() throws IOException {
 		// Given
 		String inputFiles = "src/test/resources/globalcardinalitiessample.nt";

@@ -58,16 +58,12 @@ public class LocalCardinalityAlgorithm {
 		JavaPairRDD<String, Iterable<String>> groupBySubject = mapToPairSubjects.groupByKey();
 
 		// Change main key by @class (subjects are no longer useful). Count the
-		// predicates.
-		//JavaPairRDD<String, Iterable<String>> mapToPairPredicats = groupBySubject.mapToPair(t -> extractKeys(t._2));
-		
-		//Louise
+		// predicates.		
 		JavaPairRDD<Iterable<String>, Iterable<String>> mapToPairClasses = groupBySubject.mapToPair(t -> extractKeys(t._2));
 		JavaPairRDD<String, Iterable<String>> mapToPairPredicats = mapToPairClasses.flatMapToPair(t -> seperateClass(t));
 
 		// Reduce by @class and // do not // remove predicates without defined class.
 		JavaPairRDD<String, Iterable<String>> reduceByKey = mapToPairPredicats
-				//.filter(t -> !NO_CLASS_DEFINITION.equals(t._1)) //Louise
 				.reduceByKey((x, y) -> mergePredicateCardinalities(x, y));
 
 		// Create a couple key from @class and predicate.
@@ -79,7 +75,6 @@ public class LocalCardinalityAlgorithm {
 		finalResult = flatMapToPair.groupByKey().mapToPair(t -> new Tuple2<String, String>(t._1, reduceAndSort(t._2)));
 	}
 	
-	//Louise
 	private static Iterator<Tuple2<String, Iterable<String>>> seperateClass(Tuple2<Iterable<String>, Iterable<String>> f) {
 		List<Tuple2<String, Iterable<String>>> mapResults = new ArrayList<>();
 		Iterator<String> firstPart = f._1.iterator();
@@ -174,33 +169,6 @@ public class LocalCardinalityAlgorithm {
 		return min + "," + max;
 	}
 
-	/*private static Tuple2<String, Iterable<String>> extractKeys(Iterable<String> t) {
-		Optional<String> findFirst = StreamSupport.stream(t.spliterator(), false)
-				.filter(ts -> ts.startsWith(CLASS_DEFINITION_IDENTIFIER)).findFirst();
-
-		Map<String, Long> collect = StreamSupport.stream(t.spliterator(), false)
-				.filter(line -> !line.startsWith(CLASS_DEFINITION_IDENTIFIER))
-				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-
-		List<String> contents = new ArrayList<>();
-		for (Map.Entry<String, Long> entry : collect.entrySet()) {
-			contents.add(entry.getKey() + " " + entry.getValue());
-		}
-
-		if (findFirst.isPresent()) {
-			String string = findFirst.get();
-
-			if (string.length() > 1) {
-				return new Tuple2<String, Iterable<String>>(string.substring(1), contents);
-			} else {
-				throw new DatasetRuntimeException("Key must be not empty");
-			}
-		} else {
-			return new Tuple2<String, Iterable<String>>(NO_CLASS_DEFINITION, contents);
-		}
-	}*/
-	
-	//Louise
 	private static Tuple2<Iterable<String>, Iterable<String>> extractKeys(Iterable<String> t) {
 		List<String> findClass = StreamSupport.stream(t.spliterator(), false)
 				.filter(ts -> ts.startsWith(CLASS_DEFINITION_IDENTIFIER)).collect(Collectors.toList());

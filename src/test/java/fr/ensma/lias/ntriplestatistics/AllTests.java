@@ -8,7 +8,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Mickael BARON
  */
 @RunWith(Suite.class)
-@SuiteClasses(value = { GlobalCardinalityAlgorithmTest.class, LocalCardinalityAlgorithmTest.class })
+@SuiteClasses(value = { GlobalCardinalityAlgorithmTest.class, LocalCardinalityAlgorithmTest.class, CSCardinalityAlgorithmTest.class})
 public class AllTests {
 
 }
