@@ -64,7 +64,7 @@ public class LocalCardinalityAlgorithmTest {
 		Assert.assertEquals(new Long(0), buildAsMap.get("AssistantProf,age").getMin());
 	}
 	
-	//@Test
+	@Test
 	public void buildAsFileTest() throws IOException {
 		// Given
 		String inputFiles = "src/test/resources/localcardinalitiessample.nt";
@@ -95,10 +95,12 @@ public class LocalCardinalityAlgorithmTest {
 
 		String fullContent = sb.toString();
 		
-		Assert.assertTrue(fullContent.contains("AssistantProf,advises,1,1"));
-		Assert.assertTrue(fullContent.contains("Prof,advises,1,2"));
+		Assert.assertTrue(fullContent.contains("AssistantProf,advises,0,1"));
+		Assert.assertTrue(fullContent.contains("Prof,advises,0,2"));
 		Assert.assertTrue(fullContent.contains("Student,name,1,1"));
 		Assert.assertTrue(fullContent.contains("Student,age,0,1"));
+		Assert.assertTrue(fullContent.contains("AssistantProf,age,0,1"));
+		Assert.assertTrue(fullContent.contains("Thing,advises,1,3"));
 	}
 
 	@Test

@@ -70,29 +70,29 @@ public class CSCardinalityAlgorithmTest {
 		Assert.assertTrue(buildAsCS.contains(cs5));	
 	}
 	
-	//@Test
+	@Test
 	public void buildAsFileTest() throws IOException {
 		// Given
-		String inputFiles = "src/test/resources/localcardinalitiessample.nt";
+		String inputFiles = "src/test/resources/cscardinalitiessample.nt";
 		long value = System.currentTimeMillis();
 		String outputDirectory = "target/" + value;
 		
 		// When
-		ICardinalityAlgorithmBuilder builder = new LocalCardinalityAlgorithm.LocalCardinalityAlgorithmBuilder(
-				inputFiles).withOutputDirectory(outputDirectory).withTypePredicateIdentifier("type");
+		ICardinalityAlgorithmBuilder builder = new CSCardinalityAlgorithm.CSCardinalityAlgorithmBuilder(
+				inputFiles).withOutputDirectory(outputDirectory);
 		builder.buildAsTextFile();
 		
 		// Then
-		File file = new File(outputDirectory + "/localcardinalities");
+		File file = new File(outputDirectory + "/cscardinalities");
 		Assert.assertTrue(file.exists());
 		Assert.assertTrue(file.isDirectory());
 		
-		file = new File(outputDirectory + "/localcardinalities/part-00000");
+		file = new File(outputDirectory + "/cscardinalities/part-00000");
 		Assert.assertTrue(file.exists());
 		Assert.assertTrue(file.isFile());
 		
 		StringBuilder sb = new StringBuilder();
-		BufferedReader br = Files.newBufferedReader(Paths.get(outputDirectory + "/localcardinalities/part-00000"));
+		BufferedReader br = Files.newBufferedReader(Paths.get(outputDirectory + "/cscardinalities/part-00000"));
 		String line = null;
 		while ((line = br.readLine()) != null) {
 			sb.append(line);
@@ -100,10 +100,11 @@ public class CSCardinalityAlgorithmTest {
 		br.close();
 
 		String fullContent = sb.toString();
-		
-		Assert.assertTrue(fullContent.contains("AssistantProf,advises,1,1"));
-		Assert.assertTrue(fullContent.contains("Prof,advises,1,2"));
-		Assert.assertTrue(fullContent.contains("Student,name,1,1"));
-		Assert.assertTrue(fullContent.contains("Student,age,0,1"));
+
+		Assert.assertTrue(fullContent.contains("3, advises=4, type=3"));
+		Assert.assertTrue(fullContent.contains("1, name=1, type=2, age=1"));
+		Assert.assertTrue(fullContent.contains("1, name=1, type=1"));
+		Assert.assertTrue(fullContent.contains("1, advises=3"));
+		Assert.assertTrue(fullContent.contains("1, name=1, advises=1"));
 	}
 }
