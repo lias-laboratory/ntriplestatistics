@@ -33,7 +33,6 @@ public class LocalCardinalityAlgorithmTest {
 		Assert.assertTrue(buildAsText.contains("Student,name,1,1"));
 		Assert.assertTrue(buildAsText.contains("Student,age,0,1"));
 		Assert.assertTrue(buildAsText.contains("AssistantProf,age,0,1"));
-		Assert.assertTrue(buildAsText.contains("Thing,advises,1,3"));
 	}
 
 	@Test
@@ -47,7 +46,7 @@ public class LocalCardinalityAlgorithmTest {
 		Map<String, Cardinality> buildAsMap = builder.buildAsMap();
 
 		// Then
-		Assert.assertEquals(10, buildAsMap.keySet().size());
+		Assert.assertEquals(8, buildAsMap.keySet().size());
 		Assert.assertEquals(new Long(1), buildAsMap.get("AssistantProf,advises").getMax());
 		Assert.assertEquals(new Long(0), buildAsMap.get("AssistantProf,advises").getMin());
 		Assert.assertEquals(new Long(2), buildAsMap.get("Prof,advises").getMax());
@@ -56,15 +55,13 @@ public class LocalCardinalityAlgorithmTest {
 		Assert.assertEquals(new Long(1), buildAsMap.get("Student,name").getMin());
 		Assert.assertEquals(new Long(1), buildAsMap.get("Student,age").getMax());
 		Assert.assertEquals(new Long(0), buildAsMap.get("Student,age").getMin());
-		Assert.assertEquals(new Long(3), buildAsMap.get("Thing,advises").getMax());
-		Assert.assertEquals(new Long(1), buildAsMap.get("Thing,advises").getMin());
 		Assert.assertEquals(new Long(1), buildAsMap.get("Prof,age").getMax());
 		Assert.assertEquals(new Long(0), buildAsMap.get("Prof,age").getMin());
 		Assert.assertEquals(new Long(1), buildAsMap.get("AssistantProf,age").getMax());
 		Assert.assertEquals(new Long(0), buildAsMap.get("AssistantProf,age").getMin());
 	}
 	
-	//@Test
+	@Test
 	public void buildAsFileTest() throws IOException {
 		// Given
 		String inputFiles = "src/test/resources/localcardinalitiessample.nt";
@@ -95,10 +92,11 @@ public class LocalCardinalityAlgorithmTest {
 
 		String fullContent = sb.toString();
 		
-		Assert.assertTrue(fullContent.contains("AssistantProf,advises,1,1"));
-		Assert.assertTrue(fullContent.contains("Prof,advises,1,2"));
+		Assert.assertTrue(fullContent.contains("AssistantProf,advises,0,1"));
+		Assert.assertTrue(fullContent.contains("Prof,advises,0,2"));
 		Assert.assertTrue(fullContent.contains("Student,name,1,1"));
 		Assert.assertTrue(fullContent.contains("Student,age,0,1"));
+		Assert.assertTrue(fullContent.contains("AssistantProf,age,0,1"));
 	}
 
 	@Test

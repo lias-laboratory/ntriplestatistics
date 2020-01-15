@@ -29,7 +29,7 @@ public class NTripleStatisticsLauncher implements Runnable {
 	String typePredicateIdentifier;
 
 	enum NTRIPLEStatisticsTypes {
-		GLOBAL_CARDINALITIES, LOCAL_CARDINALITIES
+		GLOBAL_CARDINALITIES, LOCAL_CARDINALITIES, CS_CARDINALITIES
 	}
 
 	public static void main(String[] args) {
@@ -48,6 +48,10 @@ public class NTripleStatisticsLauncher implements Runnable {
 			case LOCAL_CARDINALITIES: {
 				builder = new LocalCardinalityAlgorithm.LocalCardinalityAlgorithmBuilder(input);
 				builder.withTypePredicateIdentifier(typePredicateIdentifier);
+				break;
+			}
+			case CS_CARDINALITIES: {
+				builder = new CSCardinalityAlgorithm.CSCardinalityAlgorithmBuilder(input);
 				break;
 			}
 		}
