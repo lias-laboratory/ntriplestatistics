@@ -83,7 +83,7 @@
 	</build>
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>https://ci-lias.ensma.fr/view/Java/job/ntriplestatistics</url>
+		<url>https://ci-lias.ensma.fr/job/ntriplestatistics</url>
 	</ciManagement>
 	<distributionManagement>
 		<repository>
