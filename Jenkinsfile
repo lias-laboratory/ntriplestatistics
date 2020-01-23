@@ -24,6 +24,13 @@ pipeline {
         		}
         	}
         }
+        stage("Deploy") {
+            steps {
+                dir('target') {
+                    sh 'cp ntriplestatistics-fulljar.jar /var/forge_repository'
+                }
+            }
+        }
         stage('SonarQube analysis') {
             steps {
                 sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean verify sonar:sonar'
