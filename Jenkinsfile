@@ -14,11 +14,6 @@ pipeline {
                 sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean package'
             }
         }
-        stage('Deploy') {
-            steps {
-                sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean deploy'
-            }
-        }
         stage('Test') {
         	steps {
         		sh 'mvn -B -s ${MAVEN_SETTINGS} clean test'
