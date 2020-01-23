@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean package'
+                sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean compile'
             }
         }
         stage('Test') {
@@ -26,9 +26,13 @@ pipeline {
         }
         stage("Deploy") {
             steps {
-                dir('target') {
-                    sh 'cp ntriplestatistics-fulljar.jar /var/forge_repository'
-                }
+                sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean package'
+            } post {
+            	success {
+                	dir('target') {
+                    	sh 'cp ntriplestatistics-fulljar.jar /var/forge_repository'
+                	}
+            	}
             }
         }
         stage('SonarQube analysis') {
