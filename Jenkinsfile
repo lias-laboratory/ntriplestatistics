@@ -24,10 +24,11 @@ pipeline {
         		}
         	}
         }
-        stage("Deploy") {
+        stage('Deploy') {
             steps {
                 sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean package'
-            } post {
+            } 
+            post {
             	success {
                 	dir('target') {
                     	sh 'cp ntriplestatistics-fulljar.jar /var/forge_repository'
