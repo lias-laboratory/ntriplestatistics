@@ -31,7 +31,7 @@ pipeline {
             post {
             	success {
                 	dir('target') {
-                    	sh 'cp ntriplestatistics-fulljar.jar /var/forge_repository'
+                    	sh 'cp *-app.jar /var/forge_repository'
                 	}
             	}
             }
