@@ -37,12 +37,10 @@ public class GlobalCardinalityAlgorithm {
 		JavaRDD<String> textFile = sc.textFile(inputFiles);
 		// JavaRDD<String> textFile = sc.textFile("hdfs://s-virtualmachine1-lias:9000/user/adminlias/2015-11-02-RouteThing.node.sorted.nt");
 
-		Long subjectNumber = textFile.filter(t -> GlobalCardinalityAlgorithm.getLineFilter(t))
-				.map(line -> line.split(" ")[0]).distinct().count();
+		Long subjectNumber = textFile.map(line -> line.split(" ")[0]).distinct().count();
 
 		// Construct key = (Predicat + Subject)
-		JavaPairRDD<String, Long> rdd = textFile.filter(t -> GlobalCardinalityAlgorithm.getLineFilter(t))
-				.map(line -> line.split(" ")).mapToPair(s -> new Tuple2<String, Long>(s[1] + " " + s[0], 1L))
+		JavaPairRDD<String, Long> rdd = textFile.map(line -> line.split(" ")).mapToPair(s -> new Tuple2<String, Long>(s[1] + " " + s[0], 1L))
 				.reduceByKey((x, y) -> x + y).cache();
 
 		// Predicate Max
@@ -86,10 +84,6 @@ public class GlobalCardinalityAlgorithm {
 
 		sc.close();
 		return result;
-	}
-
-	protected static boolean getLineFilter(String line) {
-		return true;//!line.startsWith("_");
 	}
 
 	private static String sort(Iterable<Long> values) {

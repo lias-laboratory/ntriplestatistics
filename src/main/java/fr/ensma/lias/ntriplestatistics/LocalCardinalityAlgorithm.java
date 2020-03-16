@@ -48,7 +48,7 @@ public class LocalCardinalityAlgorithm {
 
 	private void build() {
 		// Split each line.
-		JavaRDD<String[]> rows = sc.textFile(inputFiles).map(line -> line.split(" "));
+		JavaRDD<String[]> rows = sc.textFile(inputFiles).map(line -> line.split("\t"));
 
 		// Eliminate object and for 'type class' couple transform to @class.
 		JavaPairRDD<String, String> mapToPairSubjects = rows
@@ -62,8 +62,9 @@ public class LocalCardinalityAlgorithm {
 		JavaPairRDD<Iterable<String>, Iterable<String>> mapToPairClasses = groupBySubject.mapToPair(t -> extractKeys(t._2));
 		JavaPairRDD<String, Iterable<String>> mapToPairPredicats = mapToPairClasses.flatMapToPair(t -> seperateClass(t));
 
-		// Reduce by @class and // do not // remove predicates without defined class.
+		// Reduce by @class and remove predicates without defined class.
 		JavaPairRDD<String, Iterable<String>> reduceByKey = mapToPairPredicats
+				.filter(t -> !NO_CLASS_DEFINITION.equals(t._1))
 				.reduceByKey((x, y) -> mergePredicateCardinalities(x, y));
 
 		// Create a couple key from @class and predicate.
