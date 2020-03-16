@@ -38,16 +38,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven.compiler.version}</version>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-					<encoding>${project.build.sourceEncoding}</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
@@ -58,7 +48,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<finalName>${project.artifactId}-fulljar</finalName>
+					<finalName>${project.artifactId}-app</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 					<archive>
 						<manifest>
@@ -81,4 +71,23 @@
 
 		</plugins>
 	</build>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>https://ci-lias.ensma.fr/job/ntriplestatistics</url>
+	</ciManagement>
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>Internal Releases</name>
+			<url>http://s-nexus-lias.ensma.fr/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Internal Snapshots</name>
+			<url>http://s-nexus-lias.ensma.fr/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<scm>
+		<url>scm:git:https://git.lias-lab.fr/r/exploiting/ntriplestatistics.git</url>
+	</scm>
 </project>
