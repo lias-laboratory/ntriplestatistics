@@ -1,11 +1,12 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.model;
 
 import java.util.Map;
 
 /**
- * @author Louise PARKIN
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
  */
 public class CharacteristicSet {
+	
 	private Integer subjectNb;
 
 	private Map<String,Integer> predicates;

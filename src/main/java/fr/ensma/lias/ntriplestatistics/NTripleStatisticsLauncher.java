@@ -1,11 +1,16 @@
 package fr.ensma.lias.ntriplestatistics;
 
+import fr.ensma.lias.ntriplestatistics.algorithm.CSCardinalityAlgorithm;
+import fr.ensma.lias.ntriplestatistics.algorithm.DomainAlgorithm;
+import fr.ensma.lias.ntriplestatistics.algorithm.GlobalCardinalityAlgorithm;
+import fr.ensma.lias.ntriplestatistics.algorithm.ICardinalityAlgorithmBuilder;
+import fr.ensma.lias.ntriplestatistics.algorithm.LocalCardinalityAlgorithm;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * @author Mickael BARON
+ * @author Mickael BARON (baron@ensma.fr)
  */
 @Command(version = "NTripleStatistics 1.0", header = "%nNTripleStatistics: statistic tools for NTriple files.%n", description = "TBA", footer = "Coded with ♥ by Mickael BARON (Follow me on Twitter @mickaelbaron).")
 public class NTripleStatisticsLauncher implements Runnable {
@@ -25,11 +30,15 @@ public class NTripleStatisticsLauncher implements Runnable {
 	NTRIPLEStatisticsTypes type;
 
 	@Option(names = { "-t",
-			"--typeidentifier" }, description = "The type predicate identifier (default: ${DEFAULT-VALUE}). Only used for the Local Cardinality algorithm.", defaultValue = LocalCardinalityAlgorithm.TYPE_PREDICATE_IDENTIFIER_DEFAULT)
+			"--typeidentifier" }, description = "The type predicate identifier (default: ${DEFAULT-VALUE}). Only used for the Local Cardinality algorithm.", defaultValue = ICardinalityAlgorithmBuilder.TYPE_PREDICATE_IDENTIFIER_DEFAULT)
 	String typePredicateIdentifier;
+	
+	@Option(names = { "-s",
+			"--separator" }, description = "The separator expression between the subject, predicate and object contents.", defaultValue = ICardinalityAlgorithmBuilder.DEFAULT_SEPARATOR)
+	String separator;
 
 	enum NTRIPLEStatisticsTypes {
-		GLOBAL_CARDINALITIES, LOCAL_CARDINALITIES, CS_CARDINALITIES
+		GLOBAL_CARDINALITIES, LOCAL_CARDINALITIES, CS_CARDINALITIES, DOMAIN
 	}
 
 	public static void main(String[] args) {
@@ -52,6 +61,10 @@ public class NTripleStatisticsLauncher implements Runnable {
 			}
 			case CS_CARDINALITIES: {
 				builder = new CSCardinalityAlgorithm.CSCardinalityAlgorithmBuilder(input);
+				break;
+			}
+			case DOMAIN: {
+				builder = new DomainAlgorithm.DomainAlgorithmBuilder(input);
 				break;
 			}
 		}

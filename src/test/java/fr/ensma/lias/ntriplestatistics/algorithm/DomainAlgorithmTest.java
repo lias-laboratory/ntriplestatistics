@@ -1,4 +1,4 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.algorithm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,8 +9,31 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.ensma.lias.ntriplestatistics.algorithm.DomainAlgorithm;
+import fr.ensma.lias.ntriplestatistics.algorithm.ICardinalityAlgorithmBuilder;
+
+/**
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
+ */
 public class DomainAlgorithmTest {
 
+	@Test
+	public void buildAsTextWithTabContentTest() {
+		// Given
+		String inputFiles = "src/test/resources/domainsamplewithtab.nt";
+
+		// When
+		ICardinalityAlgorithmBuilder builder = new DomainAlgorithm.DomainAlgorithmBuilder(
+				inputFiles);
+		String buildAsText = builder.withSeparator("\t").buildAsText();
+
+		// Then
+		Assert.assertTrue(buildAsText.contains("name,Professor"));
+		Assert.assertTrue(buildAsText.contains("type,Person"));
+		Assert.assertTrue(buildAsText.contains("age,Student,Professor"));
+		Assert.assertTrue(buildAsText.contains("advises,FullProfessor"));
+	}
+	
 	@Test
 	public void buildAsTextTest() {
 		// Given

@@ -1,4 +1,4 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.algorithm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,8 +10,11 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.ensma.lias.ntriplestatistics.algorithm.GlobalCardinalityAlgorithm;
+import fr.ensma.lias.ntriplestatistics.model.Cardinality;
+
 /**
- * @author Mickael BARON
+ * @author Mickael BARON (baron@ensma.fr)
  */
 public class GlobalCardinalityAlgorithmTest {
 
@@ -23,7 +26,7 @@ public class GlobalCardinalityAlgorithmTest {
 		// When
 		ICardinalityAlgorithmBuilder builder = new GlobalCardinalityAlgorithm.GlobalCardinalityAlgorithmBuilder(
 				inputFiles);
-		Map<String, Cardinality> buildAsMap = builder.buildAsMap();
+		Map<String, Cardinality> buildAsMap = ((GlobalCardinalityAlgorithm.GlobalCardinalityAlgorithmBuilder)builder).buildAsMap();
 
 		// Then
 		Assert.assertEquals(4, buildAsMap.keySet().size());
@@ -37,6 +40,23 @@ public class GlobalCardinalityAlgorithmTest {
 		Assert.assertEquals(new Long(0), buildAsMap.get("is_sleeping").getMin());
 	}
 
+	@Test
+	public void buildAsTextFromTabContentTest() {
+		// Given
+		String inputFiles = "src/test/resources/globalcardinalitiessamplewithtab.nt";
+
+		// When
+		ICardinalityAlgorithmBuilder builder = new GlobalCardinalityAlgorithm.GlobalCardinalityAlgorithmBuilder(
+				inputFiles);
+		String buildAsText = builder.withSeparator("\t").buildAsText();
+
+		// Then
+		Assert.assertTrue(buildAsText.contains("is_sleeping,0,2"));
+		Assert.assertTrue(buildAsText.contains("is,0,1"));
+		Assert.assertTrue(buildAsText.contains("is_attending,1,2"));
+		Assert.assertTrue(buildAsText.contains("is_eating,0,1"));
+	}
+	
 	@Test
 	public void buildAsTextTest() {
 		// Given

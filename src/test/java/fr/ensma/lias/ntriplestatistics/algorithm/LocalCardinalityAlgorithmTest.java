@@ -1,4 +1,4 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.algorithm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,10 +12,31 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.ensma.lias.ntriplestatistics.algorithm.LocalCardinalityAlgorithm;
+import fr.ensma.lias.ntriplestatistics.model.Cardinality;
+
 /**
- * @author Mickael BARON
+ * @author Mickael BARON (baron@ensma.fr)
  */
 public class LocalCardinalityAlgorithmTest {
+	
+	@Test
+	public void buildAsTextFromTabContentTest() {
+		// Given
+		String inputFiles = "src/test/resources/localcardinalitiessamplewithtab.nt";
+
+		// When
+		ICardinalityAlgorithmBuilder builder = new LocalCardinalityAlgorithm.LocalCardinalityAlgorithmBuilder(
+				inputFiles).withTypePredicateIdentifier("type").withSeparator("\t");
+		String buildAsText = builder.buildAsText();
+
+		// Then
+		Assert.assertTrue(buildAsText.contains("AssistantProf,advises,0,1"));
+		Assert.assertTrue(buildAsText.contains("Prof,advises,0,2"));
+		Assert.assertTrue(buildAsText.contains("Student,name,1,1"));
+		Assert.assertTrue(buildAsText.contains("Student,age,0,1"));
+		Assert.assertTrue(buildAsText.contains("AssistantProf,age,0,1"));
+	}
 	
 	@Test
 	public void buildAsTextTest() {
@@ -43,7 +64,7 @@ public class LocalCardinalityAlgorithmTest {
 		// When
 		ICardinalityAlgorithmBuilder builder = new LocalCardinalityAlgorithm.LocalCardinalityAlgorithmBuilder(
 				inputFiles).withTypePredicateIdentifier("type");
-		Map<String, Cardinality> buildAsMap = builder.buildAsMap();
+		Map<String, Cardinality> buildAsMap = ((LocalCardinalityAlgorithm.LocalCardinalityAlgorithmBuilder)builder).buildAsMap();
 
 		// Then
 		Assert.assertEquals(8, buildAsMap.keySet().size());

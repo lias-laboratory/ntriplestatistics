@@ -1,7 +1,7 @@
 package fr.ensma.lias.ntriplestatistics;
 
 /**
- * @author Mickael BARON
+ * @author Mickael BARON (baron@ensma.fr)
  */
 public class DatasetRuntimeException extends RuntimeException {
 

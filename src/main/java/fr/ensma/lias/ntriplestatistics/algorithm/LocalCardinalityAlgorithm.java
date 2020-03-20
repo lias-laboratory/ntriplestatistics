@@ -1,4 +1,4 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.algorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +15,12 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import fr.ensma.lias.ntriplestatistics.DatasetRuntimeException;
+import fr.ensma.lias.ntriplestatistics.model.Cardinality;
 import scala.Tuple2;
 
 /**
- * @author Mickael BARON
+ * @author Mickael BARON (baron@ensma.fr)
  */
 public class LocalCardinalityAlgorithm {
 
@@ -30,41 +32,43 @@ public class LocalCardinalityAlgorithm {
 
 	private JavaPairRDD<String, String> finalResult;
 
-	public static final String TYPE_PREDICATE_IDENTIFIER_DEFAULT = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>";
+	private static String typePredicateIdentifier;
 
-	private static String typePredicateIdentifier = TYPE_PREDICATE_IDENTIFIER_DEFAULT;
-	
-	private static final String NO_CLASS_DEFINITION = "Thing";
+	private static String separatorIdentifier;
 
-	private static final String CLASS_DEFINITION_IDENTIFIER = "@";
-
-	private LocalCardinalityAlgorithm(String inputFiles, String outputDirectory) {
+	private LocalCardinalityAlgorithm(String inputFiles, String outputDirectory, String typePredicateIdentifier,
+			String separatorIdentifier) {
 		this.outputDirectory = outputDirectory;
 		this.inputFiles = inputFiles;
-		
+		LocalCardinalityAlgorithm.typePredicateIdentifier = typePredicateIdentifier;
+		LocalCardinalityAlgorithm.separatorIdentifier = separatorIdentifier;
+
 		SparkConf conf = new SparkConf().setAppName("local_cardinality").setMaster("local[*]");
 		sc = new JavaSparkContext(conf);
+
 	}
 
 	private void build() {
 		// Split each line.
-		JavaRDD<String[]> rows = sc.textFile(inputFiles).map(line -> line.split("\t"));
+		JavaRDD<String[]> rows = sc.textFile(inputFiles).map(line -> line.split(separatorIdentifier));
 
 		// Eliminate object and for 'type class' couple transform to @class.
 		JavaPairRDD<String, String> mapToPairSubjects = rows
 				.mapToPair(s -> new Tuple2<String, String>(s[0], simplifyPredicateObject(s[1], s[2])));
-
+		
 		// Group by subject.
 		JavaPairRDD<String, Iterable<String>> groupBySubject = mapToPairSubjects.groupByKey();
-
+		
 		// Change main key by @class (subjects are no longer useful). Count the
-		// predicates.		
-		JavaPairRDD<Iterable<String>, Iterable<String>> mapToPairClasses = groupBySubject.mapToPair(t -> extractKeys(t._2));
-		JavaPairRDD<String, Iterable<String>> mapToPairPredicats = mapToPairClasses.flatMapToPair(t -> seperateClass(t));
+		// predicates.
+		JavaPairRDD<Iterable<String>, Iterable<String>> mapToPairClasses = groupBySubject
+				.mapToPair(t -> extractKeys(t._2));
+		JavaPairRDD<String, Iterable<String>> mapToPairPredicats = mapToPairClasses
+				.flatMapToPair(t -> seperateClass(t));
 
 		// Reduce by @class and remove predicates without defined class.
 		JavaPairRDD<String, Iterable<String>> reduceByKey = mapToPairPredicats
-				.filter(t -> !NO_CLASS_DEFINITION.equals(t._1))
+				.filter(t -> !ICardinalityAlgorithmBuilder.THING.equals(t._1))
 				.reduceByKey((x, y) -> mergePredicateCardinalities(x, y));
 
 		// Create a couple key from @class and predicate.
@@ -75,12 +79,13 @@ public class LocalCardinalityAlgorithm {
 		// the values has only one item, it's the case of max = min.
 		finalResult = flatMapToPair.groupByKey().mapToPair(t -> new Tuple2<String, String>(t._1, reduceAndSort(t._2)));
 	}
-	
-	private static Iterator<Tuple2<String, Iterable<String>>> seperateClass(Tuple2<Iterable<String>, Iterable<String>> f) {
+
+	private static Iterator<Tuple2<String, Iterable<String>>> seperateClass(
+			Tuple2<Iterable<String>, Iterable<String>> f) {
 		List<Tuple2<String, Iterable<String>>> mapResults = new ArrayList<>();
 		Iterator<String> firstPart = f._1.iterator();
 		while (firstPart.hasNext()) {
-			mapResults.add(new Tuple2<String, Iterable<String>>(firstPart.next(),f._2));
+			mapResults.add(new Tuple2<String, Iterable<String>>(firstPart.next(), f._2));
 		}
 		return mapResults.iterator();
 	}
@@ -172,36 +177,37 @@ public class LocalCardinalityAlgorithm {
 
 	private static Tuple2<Iterable<String>, Iterable<String>> extractKeys(Iterable<String> t) {
 		List<String> findClass = StreamSupport.stream(t.spliterator(), false)
-				.filter(ts -> ts.startsWith(CLASS_DEFINITION_IDENTIFIER)).collect(Collectors.toList());
+				.filter(ts -> ts.startsWith(ICardinalityAlgorithmBuilder.CLASS_DEFINITION_IDENTIFIER))
+				.collect(Collectors.toList());
 
 		Map<String, Long> collect = StreamSupport.stream(t.spliterator(), false)
-				.filter(line -> !line.startsWith(CLASS_DEFINITION_IDENTIFIER))
+				.filter(line -> !line.startsWith(ICardinalityAlgorithmBuilder.CLASS_DEFINITION_IDENTIFIER))
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
 		List<String> contents = new ArrayList<>();
 		for (Map.Entry<String, Long> entry : collect.entrySet()) {
 			contents.add(entry.getKey() + " " + entry.getValue());
 		}
-		
+
 		List<String> classes = new ArrayList<>();
 		if (!findClass.isEmpty()) {
-			for(String s:findClass) {
-				if(s.length()>1) {
+			for (String s : findClass) {
+				if (s.length() > 1) {
 					classes.add(s.substring(1));
-				}else {
+				} else {
 					throw new DatasetRuntimeException("Key must be not empty");
-				}			
+				}
 			}
 			return new Tuple2<Iterable<String>, Iterable<String>>(classes, contents);
 		} else {
-			classes.add(NO_CLASS_DEFINITION);
+			classes.add(ICardinalityAlgorithmBuilder.THING);
 			return new Tuple2<Iterable<String>, Iterable<String>>(classes, contents);
 		}
 	}
 
 	private static String simplifyPredicateObject(String predicate, String object) {
 		if (typePredicateIdentifier.equals(predicate)) {
-			return CLASS_DEFINITION_IDENTIFIER + object;
+			return ICardinalityAlgorithmBuilder.CLASS_DEFINITION_IDENTIFIER + object;
 		} else {
 			return predicate;
 		}
@@ -240,9 +246,14 @@ public class LocalCardinalityAlgorithm {
 	}
 
 	public static class LocalCardinalityAlgorithmBuilder implements ICardinalityAlgorithmBuilder {
+
 		private String outputDirectory;
 
 		private String inputFiles;
+
+		private String typePredicateIdentifier = ICardinalityAlgorithmBuilder.TYPE_PREDICATE_IDENTIFIER_DEFAULT;
+
+		private String separatorIdentifier = ICardinalityAlgorithmBuilder.DEFAULT_SEPARATOR;
 
 		public LocalCardinalityAlgorithmBuilder(String inputFiles) {
 			this.inputFiles = inputFiles;
@@ -254,16 +265,17 @@ public class LocalCardinalityAlgorithm {
 
 			return this;
 		}
-		
+
 		@Override
 		public ICardinalityAlgorithmBuilder withTypePredicateIdentifier(String typePredicateIdentifier) {
-			LocalCardinalityAlgorithm.typePredicateIdentifier = typePredicateIdentifier;
-			
+			this.typePredicateIdentifier = typePredicateIdentifier;
+
 			return this;
 		}
 
 		private LocalCardinalityAlgorithm build() {
-			LocalCardinalityAlgorithm currentInstance = new LocalCardinalityAlgorithm(inputFiles, outputDirectory);
+			LocalCardinalityAlgorithm currentInstance = new LocalCardinalityAlgorithm(inputFiles, outputDirectory,
+					typePredicateIdentifier, separatorIdentifier);
 			currentInstance.build();
 
 			return currentInstance;
@@ -272,7 +284,7 @@ public class LocalCardinalityAlgorithm {
 		@Override
 		public String buildAsText() {
 			LocalCardinalityAlgorithm build = this.build();
-			
+
 			return build.saveAsText();
 		}
 
@@ -286,11 +298,17 @@ public class LocalCardinalityAlgorithm {
 			build.saveAsTextFile();
 		}
 
-		@Override
 		public Map<String, Cardinality> buildAsMap() {
 			LocalCardinalityAlgorithm build = this.build();
-			
+
 			return build.saveAsMap();
+		}
+
+		@Override
+		public ICardinalityAlgorithmBuilder withSeparator(String separator) {
+			this.separatorIdentifier = separator;
+
+			return this;
 		}
 	}
 }

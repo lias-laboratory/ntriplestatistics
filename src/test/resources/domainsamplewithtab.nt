@@ -1,0 +1,5 @@
+name	<http://www.w3.org/2000/01/rdf-schema#domain>	Professor
+type	<http://www.w3.org/2000/01/rdf-schema#domain>	Person
+age	<http://www.w3.org/2000/01/rdf-schema#domain>	Student
+age	<http://www.w3.org/2000/01/rdf-schema#domain>	Professor
+advises	<http://www.w3.org/2000/01/rdf-schema#domain>	FullProfessor

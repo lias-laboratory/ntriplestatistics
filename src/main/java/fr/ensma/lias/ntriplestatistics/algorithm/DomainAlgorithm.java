@@ -1,4 +1,4 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.algorithm;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +9,12 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import fr.ensma.lias.ntriplestatistics.model.Cardinality;
 import scala.Tuple2;
 
+/**
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
+ */
 public class DomainAlgorithm {
 
 	private String outputDirectory;
@@ -21,26 +25,26 @@ public class DomainAlgorithm {
 
 	private JavaPairRDD<String, String> finalResult;
 
-	public static final String TYPE_PREDICATE_IDENTIFIER_DEFAULT = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>";
-	
-    public static String RDFS_PROPERTYDOMAIN = "http://www.w3.org/2000/01/rdf-schema#domain";
+	private static String separatorIdentifier;
 
-	private DomainAlgorithm(String inputFiles, String outputDirectory) {
+	private DomainAlgorithm(String inputFiles, String outputDirectory, String separatorIdentifier) {
 		this.outputDirectory = outputDirectory;
 		this.inputFiles = inputFiles;
-		
+		DomainAlgorithm.separatorIdentifier = separatorIdentifier;
+
 		SparkConf conf = new SparkConf().setAppName("domain").setMaster("local[*]");
 		sc = new JavaSparkContext(conf);
 	}
 
 	private void build() {
 		// Split each line.
-		JavaRDD<String[]> rows = sc.textFile(inputFiles).map(line -> line.split(" "));
+		JavaRDD<String[]> rows = sc.textFile(inputFiles).map(line -> line.split(separatorIdentifier));
 
-		// Keep only triples of domain definition. Map subject(predicate name) and object(domain name) Reduce by subject.
-		JavaPairRDD<String, String> mapToPairDomain = rows.filter(s->(s[1].equals("<"+RDFS_PROPERTYDOMAIN+">")))
-				.mapToPair(s -> new Tuple2<String, String>(s[0], s[2]))
-				.reduceByKey((x,y)->x+","+y);
+		// Keep only triples of domain definition. Map subject(predicate name) and
+		// object(domain name) Reduce by subject.
+		JavaPairRDD<String, String> mapToPairDomain = rows
+				.filter(s -> (s[1].equals("<" + ICardinalityAlgorithmBuilder.RDFS_PROPERTYDOMAIN + ">")))
+				.mapToPair(s -> new Tuple2<String, String>(s[0], s[2])).reduceByKey((x, y) -> x + "," + y);
 
 		finalResult = mapToPairDomain;
 	}
@@ -65,13 +69,18 @@ public class DomainAlgorithm {
 
 	private Map<String, Cardinality> saveAsMap() {
 		Map<String, Cardinality> result = new HashMap<>();
+		
+		sc.close();
 		return result;
 	}
 
 	public static class DomainAlgorithmBuilder implements ICardinalityAlgorithmBuilder {
+		
 		private String outputDirectory;
 
 		private String inputFiles;
+
+		private String separatorIdentifier = ICardinalityAlgorithmBuilder.DEFAULT_SEPARATOR;
 
 		public DomainAlgorithmBuilder(String inputFiles) {
 			this.inputFiles = inputFiles;
@@ -83,14 +92,14 @@ public class DomainAlgorithm {
 
 			return this;
 		}
-		
+
 		@Override
 		public ICardinalityAlgorithmBuilder withTypePredicateIdentifier(String typePredicateIdentifier) {
 			return this;
 		}
 
 		private DomainAlgorithm build() {
-			DomainAlgorithm currentInstance = new DomainAlgorithm(inputFiles, outputDirectory);
+			DomainAlgorithm currentInstance = new DomainAlgorithm(inputFiles, outputDirectory, separatorIdentifier);
 			currentInstance.build();
 
 			return currentInstance;
@@ -99,7 +108,7 @@ public class DomainAlgorithm {
 		@Override
 		public String buildAsText() {
 			DomainAlgorithm build = this.build();
-			
+
 			return build.saveAsText();
 		}
 
@@ -113,11 +122,17 @@ public class DomainAlgorithm {
 			build.saveAsTextFile();
 		}
 
-		@Override
 		public Map<String, Cardinality> buildAsMap() {
 			DomainAlgorithm build = this.build();
-			
+
 			return build.saveAsMap();
+		}
+
+		@Override
+		public ICardinalityAlgorithmBuilder withSeparator(String separator) {
+			this.separatorIdentifier = separator;
+
+			return this;
 		}
 	}
 

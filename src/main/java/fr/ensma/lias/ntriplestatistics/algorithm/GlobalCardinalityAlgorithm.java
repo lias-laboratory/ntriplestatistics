@@ -1,4 +1,4 @@
-package fr.ensma.lias.ntriplestatistics;
+package fr.ensma.lias.ntriplestatistics.algorithm;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,10 +10,11 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import fr.ensma.lias.ntriplestatistics.model.Cardinality;
 import scala.Tuple2;
 
 /**
- * @author Mickael BARON
+ * @author Mickael BARON (baron@ensma.fr)
  */
 public class GlobalCardinalityAlgorithm {
 
@@ -25,9 +26,12 @@ public class GlobalCardinalityAlgorithm {
 
 	private JavaPairRDD<String, String> finalResult;
 
-	private GlobalCardinalityAlgorithm(String inputFiles, String outputDirectory) {
+	private static String separatorIdentifier;
+	
+	private GlobalCardinalityAlgorithm(String inputFiles, String outputDirectory, String separatorIdentifier) {
 		this.outputDirectory = outputDirectory;
 		this.inputFiles = inputFiles;
+		GlobalCardinalityAlgorithm.separatorIdentifier = separatorIdentifier;
 
 		SparkConf conf = new SparkConf().setAppName("global_cardinality").setMaster("local[*]");
 		sc = new JavaSparkContext(conf);
@@ -35,12 +39,11 @@ public class GlobalCardinalityAlgorithm {
 
 	private void build() {
 		JavaRDD<String> textFile = sc.textFile(inputFiles);
-		// JavaRDD<String> textFile = sc.textFile("hdfs://s-virtualmachine1-lias:9000/user/adminlias/2015-11-02-RouteThing.node.sorted.nt");
 
-		Long subjectNumber = textFile.map(line -> line.split(" ")[0]).distinct().count();
+		Long subjectNumber = textFile.map(line -> line.split(separatorIdentifier)[0]).distinct().count();
 
 		// Construct key = (Predicat + Subject)
-		JavaPairRDD<String, Long> rdd = textFile.map(line -> line.split(" ")).mapToPair(s -> new Tuple2<String, Long>(s[1] + " " + s[0], 1L))
+		JavaPairRDD<String, Long> rdd = textFile.map(line -> line.split(separatorIdentifier)).mapToPair(s -> new Tuple2<String, Long>(s[1] + " " + s[0], 1L))
 				.reduceByKey((x, y) -> x + y).cache();
 
 		// Predicate Max
@@ -121,6 +124,8 @@ public class GlobalCardinalityAlgorithm {
 
 		private String inputFiles;
 
+		private String separatorIdentifier = ICardinalityAlgorithmBuilder.DEFAULT_SEPARATOR;
+		
 		public GlobalCardinalityAlgorithmBuilder(String inputFiles) {
 			this.inputFiles = inputFiles;
 		}
@@ -132,7 +137,7 @@ public class GlobalCardinalityAlgorithm {
 		}
 
 		private GlobalCardinalityAlgorithm build() {
-			GlobalCardinalityAlgorithm currentInstance = new GlobalCardinalityAlgorithm(inputFiles, outputDirectory);
+			GlobalCardinalityAlgorithm currentInstance = new GlobalCardinalityAlgorithm(inputFiles, outputDirectory, separatorIdentifier);
 			currentInstance.build();
 
 			return currentInstance;
@@ -154,7 +159,6 @@ public class GlobalCardinalityAlgorithm {
 			build.saveAsTextFile();
 		}
 
-		@Override
 		public Map<String, Cardinality> buildAsMap() {
 			GlobalCardinalityAlgorithm build = this.build();
 			return build.saveAsMap();
@@ -163,6 +167,13 @@ public class GlobalCardinalityAlgorithm {
 		@Override
 		public ICardinalityAlgorithmBuilder withTypePredicateIdentifier(String typePredicateIdentifier) {
 			return null;
+		}
+
+		@Override
+		public ICardinalityAlgorithmBuilder withSeparator(String separator) {
+			this.separatorIdentifier = separator;
+			
+			return this;
 		}
 	}
 }
