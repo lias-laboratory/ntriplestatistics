@@ -1,10 +1,5 @@
 package fr.ensma.lias.ntriplestatistics.algorithm;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +25,6 @@ public class GlobalCardinalityAlgorithm {
 	private JavaSparkContext sc;
 
 	private JavaPairRDD<String, String> finalResult;
-	private JavaPairRDD<String, Long> maxResult;
 
 	private static String separatorIdentifier;
 	
@@ -61,23 +55,6 @@ public class GlobalCardinalityAlgorithm {
 
 		// Union of previous RDD.
 		this.finalResult = max.union(min).groupByKey().mapToPair(t -> new Tuple2<String, String>(t._1, sort(t._2)));
-		
-		this.maxResult=max.mapToPair(s -> new Tuple2<String, Long>(getNiceName(s._1),s._2));
-	}
-	
-	private void saveMaxAsFile() throws IOException {
-		//StringBuffer newStringBuffer = new StringBuffer();
-		File OUTPUT_FILE = new File("global_card.txt");
-		FileWriter res = new FileWriter(OUTPUT_FILE);
-		BufferedWriter bw = new BufferedWriter(res);
-		List<Tuple2<String, Long>> collect = maxResult.collect();
-		for (Tuple2<String, Long> tuple2 : collect) {
-			//newStringBuffer.append(tuple2._1 + ":" + tuple2._2 + "\n");
-			bw.write(tuple2._1 + ":" + tuple2._2);
-			bw.newLine();
-		}
-		bw.close();
-		sc.close();
 	}
 
 	private void saveAsTextFile() {
@@ -111,18 +88,7 @@ public class GlobalCardinalityAlgorithm {
 		sc.close();
 		return result;
 	}
-	private static String getNiceName(String uri) {
-		int indexOfSeparator = uri.lastIndexOf(":");
-		int indexOfEnd = uri.lastIndexOf(">");
-		if (indexOfEnd==-1)
-			indexOfEnd=uri.length();
-		if (indexOfSeparator != -1) {
-			return uri.substring(indexOfSeparator + 1, indexOfEnd);
-		} else {
-			return uri;
-		}
-	}
-	
+
 	private static String sort(Iterable<Long> values) {
 		Iterator<Long> iterator = values.iterator();
 		Long first = iterator.next();
@@ -196,15 +162,6 @@ public class GlobalCardinalityAlgorithm {
 		public Map<String, Cardinality> buildAsMap() {
 			GlobalCardinalityAlgorithm build = this.build();
 			return build.saveAsMap();
-		}
-		
-		public void buildMaxAsFile() throws IOException {
-			if (this.outputDirectory == null) {
-				throw new RuntimeException("OutputDirectory value is missing.");
-			}
-
-			GlobalCardinalityAlgorithm build = this.build();
-			build.saveMaxAsFile();
 		}
 
 		@Override

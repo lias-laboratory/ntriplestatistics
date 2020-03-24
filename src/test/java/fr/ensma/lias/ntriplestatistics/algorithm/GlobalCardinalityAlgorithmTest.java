@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.ensma.lias.ntriplestatistics.algorithm.GlobalCardinalityAlgorithm;
-import fr.ensma.lias.ntriplestatistics.algorithm.GlobalCardinalityAlgorithm.GlobalCardinalityAlgorithmBuilder;
 import fr.ensma.lias.ntriplestatistics.model.Cardinality;
 
 /**
@@ -19,35 +18,6 @@ import fr.ensma.lias.ntriplestatistics.model.Cardinality;
  */
 public class GlobalCardinalityAlgorithmTest {
 
-	@Test
-	public void buildMaxAsFileTest() throws IOException {
-		// Given
-		String inputFiles = "src/test/resources/globalcardinalitiessample.nt";
-		long value = System.currentTimeMillis();
-		String outputDirectory = "target/" + value;
-		
-		// When
-		ICardinalityAlgorithmBuilder builder = new GlobalCardinalityAlgorithm.GlobalCardinalityAlgorithmBuilder(
-				inputFiles).withOutputDirectory(outputDirectory);
-		((GlobalCardinalityAlgorithmBuilder) builder.withSeparator(" ")).buildMaxAsFile();
-		
-		// Then
-		StringBuilder sb = new StringBuilder();
-		BufferedReader br = Files.newBufferedReader(Paths.get("global_card.txt"));
-		String line = null;
-		while ((line = br.readLine()) != null) {
-			sb.append(line);
-		}
-		br.close();
-
-		String fullContent = sb.toString();
-		
-		Assert.assertTrue(fullContent.contains("is_sleeping:2"));
-		Assert.assertTrue(fullContent.contains("is:1"));
-		Assert.assertTrue(fullContent.contains("is_attending:2"));
-		Assert.assertTrue(fullContent.contains("is_eating:1"));
-	}
-	
 	@Test
 	public void buildAsMapTest() {
 		// Given
