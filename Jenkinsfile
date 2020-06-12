@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'maven:3-jdk-8-slim'
-            args '-v ${JENKINS_HOME}/.m2:${JENKINS_HOME}/.m2 -v /var/run/docker.sock:/var/run/docker.sock:ro'
+            args '-u 1000 -v ${JENKINS_HOME}/.m2:${JENKINS_HOME}/.m2 -v /var/run/docker.sock:/var/run/docker.sock:ro'
         }
     }
     options {
