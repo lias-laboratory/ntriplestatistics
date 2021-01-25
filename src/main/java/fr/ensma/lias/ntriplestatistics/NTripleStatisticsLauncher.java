@@ -1,5 +1,6 @@
 package fr.ensma.lias.ntriplestatistics;
 
+import fr.ensma.lias.ntriplestatistics.algorithm.CSAlgorithm;
 import fr.ensma.lias.ntriplestatistics.algorithm.CSCardinalityAlgorithm;
 import fr.ensma.lias.ntriplestatistics.algorithm.DomainAlgorithm;
 import fr.ensma.lias.ntriplestatistics.algorithm.GlobalCardinalityAlgorithm;
@@ -38,7 +39,7 @@ public class NTripleStatisticsLauncher implements Runnable {
 	String separator;
 
 	enum NTRIPLEStatisticsTypes {
-		GLOBAL_CARDINALITIES, LOCAL_CARDINALITIES, CS_CARDINALITIES, DOMAIN
+		GLOBAL_CARDINALITIES, LOCAL_CARDINALITIES, CS_CARDINALITIES, DOMAIN, CS
 	}
 
 	public static void main(String[] args) {
@@ -63,13 +64,17 @@ public class NTripleStatisticsLauncher implements Runnable {
 				builder = new CSCardinalityAlgorithm.CSCardinalityAlgorithmBuilder(input);
 				break;
 			}
+			case CS: {
+				builder = new CSAlgorithm.CSCardinalityAlgorithmBuilder(input);
+				break;
+			}
 			case DOMAIN: {
 				builder = new DomainAlgorithm.DomainAlgorithmBuilder(input);
 				break;
 			}
 		}
 
-		builder.withOutputDirectory(output);
+		builder.withSeparator(separator).withOutputDirectory(output);
 				
 		long start = System.currentTimeMillis();
 		builder.buildAsTextFile();

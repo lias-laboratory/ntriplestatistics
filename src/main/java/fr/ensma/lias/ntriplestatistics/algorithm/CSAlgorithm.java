@@ -17,24 +17,22 @@ import scala.Tuple2;
 /**
  * @author Louise PARKIN (louise.parkin@ensma.fr)
  */
-public class CSCardinalityAlgorithm {
+public class CSAlgorithm {
 
 	private String outputDirectory;
 
 	private String inputFiles;
 
 	private JavaSparkContext sc;
-
-	private JavaPairRDD<List<String>, Map<String, Integer>> finalResult;
-
-	private static final String SUBJECT_NUMBER = "SUBJECTnb";
+	
+	private JavaPairRDD<String, String> result;
 
 	private static String separatorIdentifier;
 	
-	private CSCardinalityAlgorithm(String inputFiles, String outputDirectory, String separator) {
+	private CSAlgorithm(String inputFiles, String outputDirectory, String separator) {
 		this.outputDirectory = outputDirectory;
 		this.inputFiles = inputFiles;
-		CSCardinalityAlgorithm.separatorIdentifier = separator;
+		CSAlgorithm.separatorIdentifier = separator;
 
 		SparkConf conf = new SparkConf().setAppName("cs_cardinality").setMaster("local[*]");
 		sc = new JavaSparkContext(conf);
@@ -49,38 +47,61 @@ public class CSCardinalityAlgorithm {
 
 		// Group by subject.
 		JavaPairRDD<String, Iterable<String>> groupBySubject = mapToPair.groupByKey();
+		
+		//Combine identical predicates
+		JavaPairRDD<Iterable<String>,Map<String, Integer>> listPredicates = groupBySubject.mapToPair(s -> combinePredicates(s._2));
+		
+		//Get maximum cardinalities
+		JavaPairRDD<Iterable<String>,Map<String, Integer>> groupPredicates = listPredicates.reduceByKey((x,y) -> maxCard(x,y));
+		
+		//Return lists of predicates and lists of cardinalities
+		result = groupPredicates.mapToPair(s -> makeString(s._2));
 
-		// Remove duplicate predicates and increment count of predicates, then combine
-		// sets of predicates,
-		// adding the number of subjects and the cardinalities of predicates
-		JavaPairRDD<List<String>, Map<String, Integer>> stop = groupBySubject.mapToPair(f -> makeMap(f._2));
-		finalResult = stop.reduceByKey((x, y) -> reduceSet(x, y));
 	}
-
-	private static Map<String, Integer> reduceSet(Map<String, Integer> a, Map<String, Integer> b) {
-		for (String key : a.keySet()) {
-			a.put(key, a.get(key) + b.get(key));
+	
+	private static Tuple2<String,String> makeString(Map<String, Integer> predicates) {
+		String lStr="";
+		String lInt="";
+		for (String predicate : predicates.keySet()) {
+			if (lStr.equals("")) {
+				lStr=predicate;
+				lInt=predicates.get(predicate).toString();
+			}
+			else {
+				lStr+=";"+predicate;
+				lInt+=";"+predicates.get(predicate);
+			}
 		}
-		return a;
+		return new Tuple2<String, String>(lStr,lInt);
 	}
-
-	private static Tuple2<List<String>, Map<String, Integer>> makeMap(Iterable<String> predicates) {
+	
+	private static Map<String, Integer> maxCard(Map<String, Integer> a, Map<String, Integer> b) {
+		Map<String, Integer> res = new HashMap<String, Integer>();
+		for (String key : a.keySet()) {
+			if (a.get(key)>b.get(key))
+				res.put(key,a.get(key));
+			else 
+				res.put(key,b.get(key));
+		}
+		return res;
+	}
+	
+	private static Tuple2<Iterable<String>,Map<String, Integer>> combinePredicates(Iterable<String> predicates) {
 		Map<String, Integer> predicateMap = new HashMap<String, Integer>();
-		List<String> keys = new ArrayList<String>();
-		predicateMap.put(SUBJECT_NUMBER, 1);
+		List<String> keys=new ArrayList<String>();
 		for (String predicate : predicates) {
-			if (keys.contains(predicate)) {
+			if (predicateMap.containsKey(predicate)){
 				predicateMap.put(predicate, predicateMap.get(predicate) + 1);
 			} else {
 				predicateMap.put(predicate, 1);
 				keys.add(predicate);
 			}
 		}
-		return new Tuple2<List<String>, Map<String, Integer>>(keys, predicateMap);
+		return new Tuple2<Iterable<String>,Map<String, Integer>>(keys, predicateMap);
 	}
 
 	private void saveAsTextFile() {
-		finalResult.coalesce(1).saveAsTextFile(outputDirectory + "/cscardinalities");
+		result.coalesce(1).saveAsTextFile(outputDirectory + "/cscardinalities");
 
 		sc.close();
 	}
@@ -88,13 +109,9 @@ public class CSCardinalityAlgorithm {
 	private String saveAsText() {
 		StringBuffer newStringBuffer = new StringBuffer();
 
-		List<Tuple2<List<String>, Map<String, Integer>>> collect = finalResult.collect();
-		for (Tuple2<List<String>, Map<String, Integer>> tuple2 : collect) {
-			newStringBuffer.append(tuple2._2.get(SUBJECT_NUMBER));
-			for (String predicate : tuple2._1) {
-				newStringBuffer.append("," + predicate + ":" + tuple2._2.get(predicate));
-			}
-			newStringBuffer.append("\n");
+		List<Tuple2<String, String>> collect = result.collect();
+		for (Tuple2<String, String> tuple2 : collect) {
+			newStringBuffer.append(tuple2._1+","+tuple2._2+"\n");
 		}
 
 		sc.close();
@@ -108,21 +125,6 @@ public class CSCardinalityAlgorithm {
 
 		sc.close();
 		return result;
-	}
-
-	List<CharacteristicSet> saveAsCS() {
-		List<CharacteristicSet> result = new ArrayList<CharacteristicSet>();
-		List<Tuple2<List<String>, Map<String, Integer>>> collect = finalResult.collect();
-		for (Tuple2<List<String>, Map<String, Integer>> tuple2 : collect) {
-			Integer subject = tuple2._2.remove(SUBJECT_NUMBER);
-			CharacteristicSet newCharacteristicSet = new CharacteristicSet(subject, tuple2._2);
-			result.add(newCharacteristicSet);
-		}
-		
-		sc.close();
-		
-		return result;
-
 	}
 
 	protected static boolean getLineFilter(String line) {
@@ -147,21 +149,17 @@ public class CSCardinalityAlgorithm {
 			return this;
 		}
 
-		private CSCardinalityAlgorithm build() {
-			CSCardinalityAlgorithm currentInstance = new CSCardinalityAlgorithm(inputFiles, outputDirectory, separatorIdentifier);
+		private CSAlgorithm build() {
+			CSAlgorithm currentInstance = new CSAlgorithm(inputFiles, outputDirectory, separatorIdentifier);
 			currentInstance.build();
 
 			return currentInstance;
 		}
 
-		public List<CharacteristicSet> buildAsCS() {
-			CSCardinalityAlgorithm build = this.build();
-			return build.saveAsCS();
-		}
 
 		@Override
 		public String buildAsText() {
-			CSCardinalityAlgorithm build = this.build();
+			CSAlgorithm build = this.build();
 
 			return build.saveAsText();
 		}
@@ -172,12 +170,12 @@ public class CSCardinalityAlgorithm {
 				throw new RuntimeException("OutputDirectory value is missing.");
 			}
 
-			CSCardinalityAlgorithm build = this.build();
+			CSAlgorithm build = this.build();
 			build.saveAsTextFile();
 		}
 
 		public Map<String, Cardinality> buildAsMap() {
-			CSCardinalityAlgorithm build = this.build();
+			CSAlgorithm build = this.build();
 
 			return build.saveAsMap();
 		}
