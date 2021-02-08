@@ -1,10 +1,8 @@
 pipeline {
     agent {
         docker {
-	    image 'chub.lias-lab.fr/lias-maven-docker:3-jdk-8-slim'
+	    image 'maven:3-jdk-8-slim'
             args '-u 1000 -v ${JENKINS_HOME}/.m2:${JENKINS_HOME}/.m2 -v /var/run/docker.sock:/var/run/docker.sock:ro'
-            registryCredentialsId 'jenkins-adminchubuser-creds'
-            registryUrl 'https://' + CONTAINER_REGISTRY_URL
         }
     }
     options {
