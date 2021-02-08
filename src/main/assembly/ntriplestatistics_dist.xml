@@ -1,0 +1,17 @@
+<assembly>
+	<id>app</id>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<files>
+		<file>
+			<source>${project.basedir}/target/${artifactId}-${version}-jar-with-dependencies.${packaging}
+			</source>
+			<destName>${artifactId}.${packaging}</destName>
+		</file>
+		<file>
+			<source>${project.basedir}/src/main/license/lgpl.txt</source>
+		</file>
+	</files>
+</assembly>

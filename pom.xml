@@ -16,6 +16,7 @@
 		<picocli.version>4.0.4</picocli.version>
 		<junit.version>4.12</junit.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
@@ -48,8 +49,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<finalName>${project.artifactId}-app</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
 					<archive>
 						<manifest>
 							<mainClass>fr.ensma.lias.ntriplestatistics.NTripleStatisticsLauncher</mainClass>
@@ -70,6 +69,33 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>deployement</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>create-zip-package</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<finalName>${artifactId}</finalName>
+									<descriptors>
+										<descriptor>src/main/assembly/ntriplestatistics_dist.xml</descriptor>
+									</descriptors>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<ciManagement>
 		<system>Jenkins</system>
 		<url>https://ci-lias.ensma.fr/job/ntriplestatistics</url>

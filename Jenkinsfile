@@ -1,10 +1,8 @@
 pipeline {
     agent {
         docker {
-	    image 'chub.lias-lab.fr/lias-maven-docker:3-jdk-8-slim'
-            args '-u 1000 -v ${JENKINS_HOME}/.m2:${JENKINS_HOME}/.m2 -v /var/run/docker.sock:/var/run/docker.sock:ro'
-            registryCredentialsId 'jenkins-adminchubuser-creds'
-            registryUrl 'https://' + CONTAINER_REGISTRY_URL
+            image 'maven:3-jdk-8-slim'
+            args '-v ${JENKINS_HOME}/.m2:${JENKINS_HOME}/.m2 -v /var/run/docker.sock:/var/run/docker.sock:ro'
         }
     }
     options {
@@ -28,12 +26,12 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean package'
+                sh 'mvn -B -s ${MAVEN_SETTINGS} -Dmaven.test.skip=true clean package -P deployement'
             } 
             post {
             	success {
                 	dir('target') {
-                    	sh 'cp *-app.jar /var/forge_repository'
+                    	sh 'cp *.zip /var/forge_repository'
                 	}
             	}
             }
