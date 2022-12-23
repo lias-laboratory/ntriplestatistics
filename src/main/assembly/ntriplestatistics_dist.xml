@@ -13,5 +13,8 @@
 		<file>
 			<source>${project.basedir}/src/main/license/lgpl.txt</source>
 		</file>
+		<file>
+			<source>${project.basedir}/README.md</source>
+		</file>
 	</files>
 </assembly>

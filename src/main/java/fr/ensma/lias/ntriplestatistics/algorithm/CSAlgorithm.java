@@ -11,7 +11,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import fr.ensma.lias.ntriplestatistics.model.Cardinality;
-import fr.ensma.lias.ntriplestatistics.model.CharacteristicSet;
 import scala.Tuple2;
 
 /**

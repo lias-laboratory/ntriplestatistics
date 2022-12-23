@@ -10,7 +10,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.ensma.lias.ntriplestatistics.algorithm.GlobalCardinalityAlgorithm;
 import fr.ensma.lias.ntriplestatistics.model.Cardinality;
 
 /**

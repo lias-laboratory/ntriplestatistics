@@ -9,9 +9,6 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.ensma.lias.ntriplestatistics.algorithm.DomainAlgorithm;
-import fr.ensma.lias.ntriplestatistics.algorithm.ICardinalityAlgorithmBuilder;
-
 /**
  * @author Louise PARKIN (louise.parkin@ensma.fr)
  */

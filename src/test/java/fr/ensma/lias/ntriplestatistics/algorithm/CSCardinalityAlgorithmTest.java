@@ -12,7 +12,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.ensma.lias.ntriplestatistics.algorithm.CSCardinalityAlgorithm;
 import fr.ensma.lias.ntriplestatistics.model.CharacteristicSet;
 
 /**

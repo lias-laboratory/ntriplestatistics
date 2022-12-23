@@ -9,6 +9,9 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * @author Mickael BARON (baron@ensma.fr)
+ */
 public class CSAlgorithmTest {
 
 	@Test
