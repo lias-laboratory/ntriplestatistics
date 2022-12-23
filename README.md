@@ -111,10 +111,10 @@ $ java -jar ntriplestatistics-app.jar -a GLOBAL_CARDINALITIES -i ../watdiv.nt -o
 ```
 
 A text file is generated for each algorithm, containing:
-* For GLOBAL_CARDINALITIES: @(predicate,minCard,maxCard)@ with one line per predicate
-* For LOCAL_CARDINALITIES: @(class,predicate,minCard,maxCard)@ with one line per predicate and class
-* For CS_CARDINALITIES: @(predicate1,predicate2,predicate3,...,maxCardPredicate1,maxCardPredicate2,...)@ with one line per CS
-* For DOMAIN: @(predicate,domain)@ with one line per predicate
+* For GLOBAL_CARDINALITIES: `(predicate,minCard,maxCard)` with one line per predicate
+* For LOCAL_CARDINALITIES: `(class,predicate,minCard,maxCard)` with one line per predicate and class
+* For CS_CARDINALITIES: `(predicate1,predicate2,predicate3,...,maxCardPredicate1,maxCardPredicate2,...)` with one line per CS
+* For DOMAIN: `(predicate,domain)` with one line per predicate
 
 ## Historic Contributors
 
