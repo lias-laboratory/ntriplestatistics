@@ -116,6 +116,11 @@ A text file is generated for each algorithm, containing:
 * For CS_CARDINALITIES: `(predicate1,predicate2,predicate3,...,maxCardPredicate1,maxCardPredicate2,...)` with one line per CS
 * For DOMAIN: `(predicate,domain)` with one line per predicate
 
+
+## Software licence agreement
+
+* Details the license agreement of NTripleStatistics: [LICENSE](LICENSE)
+
 ## Historic Contributors
 
 * [Louise PARKIN](https://www.lias-lab.fr/members/louiseparkin/)
