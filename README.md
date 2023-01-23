@@ -121,10 +121,10 @@ A text file is generated for each algorithm, containing:
 
 * Details the license agreement of NTripleStatistics: [LICENSE](LICENSE)
 
-## Historic Contributors
+## Historic Contributors (core developers first followed by alphabetical order)
 
-* [Louise PARKIN](https://www.lias-lab.fr/members/louiseparkin/)
-* [Mickael BARON](https://www.lias-lab.fr/members/mickaelbaron/)
+* [Mickael BARON (core developer)](https://www.lias-lab.fr/members/mickaelbaron/)
+* [Louise PARKIN (core developer)](https://www.lias-lab.fr/members/louiseparkin/)
 * [Stéphane JEAN](https://www.lias-lab.fr/members/stephanejean/)
 
 ## Code analysis
