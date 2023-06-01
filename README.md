@@ -117,7 +117,7 @@ A text file is generated for each algorithm, containing:
 * For DOMAIN: `(predicate,domain)` with one line per predicate
 
 
-## Software licence agreement
+## Software license agreement
 
 * Details the license agreement of NTripleStatistics: [LICENSE](LICENSE)
 
