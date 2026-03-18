@@ -14,7 +14,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.assembly.version>3.1.1</maven.assembly.version>
 		<picocli.version>4.0.4</picocli.version>
-		<junit.version>4.12</junit.version>
+		<junit.version>4.13.2</junit.version>
 	</properties>
 
 	<dependencies>
